@@ -13,6 +13,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from school_module.models import School
 from department_module.models import Department
+from django.db import cursor
 
 
 
@@ -278,9 +279,50 @@ class UserLoginView(TokenObtainPairView):
     )
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-        if response.status_code == 200:
-            try:
-                user = CustomUser.objects.get(email=request.data['email'])
+        if response.status_code == status.HTTP_200_OK:
+            email = request.data.get('email')
+            if email:
+                try:
+                    with connection.cursor() as cursor:
+                        # Execute an SQL query to retrieve the user by email
+                        cursor.execute("SELECT * FROM User WHERE email = %s", [email])
+                        user = cursor.fetchone()
+
+                    if user:
+                        user_profile_data = {
+                            "id": user[0],
+                            "first_name": user[1],
+                            "last_name": user[2],
+                            "email": user[3],
+                        }
+                        response.data["data"] = user_profile_data
+                    else:
+                        bad_request_response = {
+                            "status": "failed",
+                            "message": "User not found"
+                        }
+                        return Response(bad_request_response, status=status.HTTP_400_BAD_REQUEST)
+                except ObjectDoesNotExist:
+                    bad_request_response = {
+                        "status": "failed",
+                        "message": "User not found"
+                    }
+                    return Response(bad_request_response, status=status.HTTP_400_BAD_REQUEST)
+                except Exception as e:
+                    error_response = {
+                        "status": "error",
+                        "message": "An error occurred while retrieving user data."
+                    }
+                    return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response
+        # if response.status_code == 200:
+        #     email = request.data['email']
+        #     try:
+        #          with conn.cursor() as cursor:
+        #     # Execute an SQL query to retrieve the user by email
+        #     cursor.execute("SELECT * FROM User WHERE email = %s", (email,))
+        #     user = cursor.fetchone()
+                # user = CustomUser.objects.get(email=request.data['email'])
                 # user_role_name = Role.objects.filter(role_id=user.role_id).first()
                 # if user_role_name:
                 #     user_role = user_role_name.role_name
@@ -299,11 +341,11 @@ class UserLoginView(TokenObtainPairView):
                 #     user_department_name = None
                 #     user_department_id = None
 
-                user_profile_data = {
-                    "id": user.id,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email,
+                # user_profile_data = {
+                #     "id": user.id,
+                #     "first_name": user.first_name,
+                #     "last_name": user.last_name,
+                #     "email": user.email,
                     # "role": user_role,
                     # "role_id": user.role_id,
                     # "school": user_school,
@@ -311,15 +353,15 @@ class UserLoginView(TokenObtainPairView):
                     # "department": user_department_name,
                     # "department_id": user_department_id,
 
-                }
-                response.data["data"] = user_profile_data
-            except CustomUser.DoesNotExist:
-                bad_request_response = {
-                    "status": "failed",
-                    "message": "User not found"
-                }
-                return Response(bad_request_response, status=status.HTTP_400_BAD_REQUEST)
-        return response
+        #         }
+        #         response.data["data"] = user_profile_data
+        #     except CustomUser.DoesNotExist:
+        #         bad_request_response = {
+        #             "status": "failed",
+        #             "message": "User not found"
+        #         }
+        #         return Response(bad_request_response, status=status.HTTP_400_BAD_REQUEST)
+        # return response
 
 
 class ListUsers(APIView):
