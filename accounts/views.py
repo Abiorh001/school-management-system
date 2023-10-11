@@ -281,16 +281,16 @@ class UserLoginView(TokenObtainPairView):
         if response.status_code == 200:
             try:
                 user = CustomUser.objects.get(email=request.data['email'])
-                user_role_name = Role.objects.filter(role_id=user.role_id).first()
-                if user_role_name:
-                    user_role = user_role_name.role_name
-                else:
-                    user_role = None
-                user_school_name = School.objects.filter(school_id=user.school_id).first()
-                if user_school_name:
-                    user_school = user_school_name.school_name
-                else:
-                    user_school = None
+                # user_role_name = Role.objects.filter(role_id=user.role_id).first()
+                # if user_role_name:
+                #     user_role = user_role_name.role_name
+                # else:
+                #     user_role = None
+                # user_school_name = School.objects.filter(school_id=user.school_id).first()
+                # if user_school_name:
+                #     user_school = user_school_name.school_name
+                # else:
+                #     user_school = None
                 # user_department = Department.objects.filter(school_id=user.school_id).first()
                 # if user_department:
                 #     user_department_name = user_department.department_name
@@ -304,10 +304,10 @@ class UserLoginView(TokenObtainPairView):
                     "first_name": user.first_name,
                     "last_name": user.last_name,
                     "email": user.email,
-                    "role": user_role,
-                    "role_id": user.role_id,
-                    "school": user_school,
-                    "school_id": user.school_id,
+                    # "role": user_role,
+                    # "role_id": user.role_id,
+                    # "school": user_school,
+                    # "school_id": user.school_id,
                     # "department": user_department_name,
                     # "department_id": user_department_id,
 
