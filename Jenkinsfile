@@ -20,17 +20,6 @@ spec:
       command:
         - cat
       tty: true
-    - name: utils
-      image: curlimages/curl:8.5.0
-      command:
-        - cat
-      tty: true
-      volumeMounts:
-        - name: jq-binary
-          mountPath: /usr/local/bin/jq
-  volumes:
-    - name: jq-binary
-      emptyDir: {}
 """
         }
     }
@@ -50,23 +39,27 @@ spec:
                 }
             }
         }
-        
-        
-        stage('Install jq') {
+        stage('Code Analysis') {
             steps {
-                container('utils') {
-                    sh '''
-                        curl -L https://github.com/stedolan/jq/releases/download/jq-1.7.1/jq-linux64 -o /usr/local/bin/jq
-                        chmod +x /usr/local/bin/jq
-                        jq --version
-                    '''
+                container('sonar-scanner') {
+                    withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                        echo "Starting Code Analysis"
+                        sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.sources=. \
+                            -Dsonar.python.version=3.12 \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.token=${SONAR_TOKEN}
+                        '''
+                    }
                 }
             }
         }
         
         stage('Quality Gate Check') {
             steps {
-                container('utils') {
+                container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
                         script {
                             echo "Checking Quality Gate status..."
@@ -80,7 +73,7 @@ spec:
                             
                             def status = sh(
                                 script: """
-                                    echo '${response}' | /usr/local/bin/jq -r '.projectStatus.status'
+                                    echo '${response}' | jq -r '.projectStatus.status'
                                 """,
                                 returnStdout: true
                             ).trim()
