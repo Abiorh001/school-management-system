@@ -16,7 +16,7 @@ spec:
         - cat
       tty: true
     - name: sonar-scanner
-      image: openjdk:17
+      image: sonarsource/sonar-scanner-cli:11.1.1.1661_6.2.1
       command:
         - cat
       tty: true
@@ -32,22 +32,7 @@ spec:
                 container('python') {
                     sh '''
                     echo "Installing Python dependencies"
-                    
-                    '''
-                }
-            }
-        }
-        stage('Install SonarScanner') {
-            steps {
-                container('sonar-scanner') {
-                    sh '''
-                    echo "Installing SonarScanner"
-                    apt-get update && apt-get install -y wget unzip
-                    wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
-                    unzip sonar-scanner-cli-4.8.0.2856-linux.zip -d /opt
-                    mv /opt/sonar-scanner-* /opt/sonar-scanner
-                    ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
-                    sonar-scanner --version
+                    pip install -r requirements.txt
                     '''
                 }
             }
