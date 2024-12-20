@@ -62,13 +62,16 @@ spec:
                 withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
                     script {
                         echo "Checking Quality Gate status..."
-
-                        // Query the SonarQube server for the Quality Gate status
-                        def qualityGateStatus = getQualityGateStatus()
-
-                        // Fail the pipeline if the quality gate is not 'OK'
-                        if (qualityGateStatus != 'OK') {
-                            error "Quality Gate failed: ${qualityGateStatus}"
+                        def qualityGateStatus = sh(
+                            script: """
+                                curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
+                            """,
+                            returnStdout: true
+                        ).trim()
+                        
+                        def jsonResponse = readJSON text: qualityGateStatus
+                        if (jsonResponse.projectStatus.status != 'OK') {
+                            error "Quality Gate failed: ${jsonResponse.projectStatus.status}"
                         } else {
                             echo "Quality Gate passed!"
                         }
@@ -77,15 +80,4 @@ spec:
             }
         }
     }
-}
-
-def getQualityGateStatus() {
-    // Query SonarQube for the quality gate status using the project key
-    def response = sh(script: """
-    curl -u ${SONAR_TOKEN}: ${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}
-    """, returnStdout: true).trim()
-
-    // Parse the response and extract the quality gate status
-    def jsonResponse = readJSON text: response
-    return jsonResponse.projectStatus.status
 }

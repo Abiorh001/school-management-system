@@ -1,3 +1,4 @@
 from django.test import TestCase
 
-# Create your tests here.
+def test_neew():
+    assert 1 == 1
