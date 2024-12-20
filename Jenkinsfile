@@ -11,7 +11,7 @@ metadata:
 spec:
   containers:
     - name: python
-      image: python:3.8
+      image: python:3.12
       command:
         - cat
       tty: true
@@ -32,7 +32,8 @@ spec:
                 container('python') {
                     sh '''
                     echo "Installing Python dependencies"
-                    pip install -r requirements.txt
+                    # Install necessary dependencies here, e.g.:
+                    # pip install -r requirements.txt
                     '''
                 }
             }
@@ -46,9 +47,22 @@ spec:
                         sonar-scanner \
                             -Dsonar.projectKey=school_management_system \
                             -Dsonar.sources=. \
+                            -Dsonar.python.version=3.12 \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_TOKEN}
+                            -Dsonar.token=${SONAR_TOKEN}
                         '''
+                    }
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                script {
+                    echo "Waiting for Quality Gate to pass"
+                    // Wait for SonarQube Quality Gate status to be green (pass)
+                    def qualityGate = waitForQualityGate()
+                    if (qualityGate.status != 'OK') {
+                        error "Quality Gate failed: ${qualityGate.status}"
                     }
                 }
             }
