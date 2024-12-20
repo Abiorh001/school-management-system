@@ -59,17 +59,19 @@ spec:
         
         stage('Quality Gate Check') {
             steps {
-                script {
-                    echo "Checking Quality Gate status..."
+                withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
+                    script {
+                        echo "Checking Quality Gate status..."
 
-                    // Wait for the SonarQube analysis to complete and then query the quality gate status
-                    def qualityGateStatus = checkQualityGateStatus()
+                        // Query the SonarQube server for the Quality Gate status
+                        def qualityGateStatus = getQualityGateStatus()
 
-                    // Fail the pipeline if the quality gate is not 'OK'
-                    if (qualityGateStatus != 'OK') {
-                        error "Quality Gate failed: ${qualityGateStatus}"
-                    } else {
-                        echo "Quality Gate passed!"
+                        // Fail the pipeline if the quality gate is not 'OK'
+                        if (qualityGateStatus != 'OK') {
+                            error "Quality Gate failed: ${qualityGateStatus}"
+                        } else {
+                            echo "Quality Gate passed!"
+                        }
                     }
                 }
             }
@@ -77,7 +79,7 @@ spec:
     }
 }
 
-def checkQualityGateStatus() {
+def getQualityGateStatus() {
     // Query SonarQube for the quality gate status using the project key
     def response = sh(script: """
     curl -u ${SONAR_TOKEN}: ${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}
