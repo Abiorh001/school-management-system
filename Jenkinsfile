@@ -15,6 +15,11 @@ spec:
       command:
         - cat
       tty: true
+    - name: sonar-scanner
+      image: openjdk:17
+      command:
+        - cat
+      tty: true
 """
         }
     }
@@ -22,30 +27,19 @@ spec:
         SONAR_HOST_URL = 'http://192.168.1.185:30942'
     }
     stages {
-        stage('Install Java 17') {
-            steps {
-                container('python') {
-                    sh '''
-                    echo "Installing Java 17"
-                    apt-get update && apt-get install -y openjdk-17-jdk
-                    java -version
-                    '''
-                }
-            }
-        }
-        stage('Install Dependencies') {
+        stage('Install Python Dependencies') {
             steps {
                 container('python') {
                     sh '''
                     echo "Installing Python dependencies"
-                    pip install -r requirements.txt
+                    
                     '''
                 }
             }
         }
         stage('Install SonarScanner') {
             steps {
-                container('python') {
+                container('sonar-scanner') {
                     sh '''
                     echo "Installing SonarScanner"
                     apt-get update && apt-get install -y wget unzip
@@ -60,7 +54,7 @@ spec:
         }
         stage('Code Analysis') {
             steps {
-                container('python') {
+                container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
                         sh '''
                         echo "Starting Code Analysis"
