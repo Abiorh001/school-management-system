@@ -20,6 +20,17 @@ spec:
       command:
         - cat
       tty: true
+    - name: utils
+      image: curlimages/curl:8.5.0
+      command:
+        - cat
+      tty: true
+      volumeMounts:
+        - name: jq-binary
+          mountPath: /usr/local/bin/jq
+  volumes:
+    - name: jq-binary
+      emptyDir: {}
 """
         }
     }
@@ -39,41 +50,46 @@ spec:
                 }
             }
         }
-        stage('Code Analysis') {
+        
+        
+        stage('Install jq') {
             steps {
-                container('sonar-scanner') {
-                    withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                        echo "Starting Code Analysis"
-                        sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.sources=. \
-                            -Dsonar.python.version=3.12 \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.token=${SONAR_TOKEN}
-                        '''
-                    }
+                container('utils') {
+                    sh '''
+                        curl -L https://github.com/stedolan/jq/releases/download/jq-1.7.1/jq-linux64 -o /usr/local/bin/jq
+                        chmod +x /usr/local/bin/jq
+                        jq --version
+                    '''
                 }
             }
         }
         
         stage('Quality Gate Check') {
             steps {
-                withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
-                    script {
-                        echo "Checking Quality Gate status..."
-                        def qualityGateStatus = sh(
-                            script: """
-                                curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
-                            """,
-                            returnStdout: true
-                        ).trim()
-                        
-                        def jsonResponse = readJSON text: qualityGateStatus
-                        if (jsonResponse.projectStatus.status != 'OK') {
-                            error "Quality Gate failed: ${jsonResponse.projectStatus.status}"
-                        } else {
-                            echo "Quality Gate passed!"
+                container('utils') {
+                    withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
+                        script {
+                            echo "Checking Quality Gate status..."
+                            def response = sh(
+                                script: """
+                                    set +x
+                                    curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
+                                """,
+                                returnStdout: true
+                            ).trim()
+                            
+                            def status = sh(
+                                script: """
+                                    echo '${response}' | /usr/local/bin/jq -r '.projectStatus.status'
+                                """,
+                                returnStdout: true
+                            ).trim()
+                            
+                            if (status != 'OK') {
+                                error "Quality Gate failed with status: ${status}"
+                            } else {
+                                echo "Quality Gate passed!"
+                            }
                         }
                     }
                 }
