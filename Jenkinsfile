@@ -75,8 +75,9 @@ spec:
                         timeout(time: 5, unit: 'MINUTES') {
                             def qg = waitForQualityGate()
                             if (qg.status != 'OK') {
-                                error "Quality Gate failed: ${qg.status}"
                                 echo "Quality Gate Conditions: ${qg.conditions}"
+                                error "Quality Gate failed: ${qg.status}"
+                                
                             }
                             echo "Quality Gate passed successfully"
                         }
