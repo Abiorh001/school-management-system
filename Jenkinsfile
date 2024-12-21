@@ -39,6 +39,18 @@ spec:
                 }
             }
         }
+
+        stage('Install jq') {
+            steps {
+                container('sonar-scanner') {
+                    sh '''
+                        apt-get update
+                        apt-get install -y jq
+                    '''
+                }
+            }
+        }
+
         stage('Code Analysis') {
             steps {
                 container('sonar-scanner') {
