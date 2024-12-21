@@ -1,8 +1,11 @@
 FROM python:3.11.6-slim-bullseye
 
 # install build-essential and pkg-config for installing python packages
+# Install build-essential and libpq-dev for psycopg2
 RUN apt-get update && apt-get install -y \
+    build-essential \
     libpq-dev \
+    gcc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

@@ -26,7 +26,6 @@ tomli
 typing_extensions
 urllib3
 gunicorn
-psycopg2
 psycopg2-binary
 python-decouple
 whitenoise
