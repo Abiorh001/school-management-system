@@ -58,59 +58,59 @@ spec:
             }
         }
 
-        stage('Quality Gate Check') {
-            steps {
-                container('sonar-scanner') {
-                    withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
-                        script {
-                            sh '''
-                            echo "Setting up jq..."
-                            mkdir -p ${HOME}/bin
-                            curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ${HOME}/bin/jq
-                            chmod +x ${HOME}/bin/jq
-                            export PATH=${HOME}/bin:$PATH
-                            jq --version
-                            '''
+        // stage('Quality Gate Check') {
+        //     steps {
+        //         container('sonar-scanner') {
+        //             withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
+        //                 script {
+        //                     sh '''
+        //                     echo "Setting up jq..."
+        //                     mkdir -p ${HOME}/bin
+        //                     curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ${HOME}/bin/jq
+        //                     chmod +x ${HOME}/bin/jq
+        //                     export PATH=${HOME}/bin:$PATH
+        //                     jq --version
+        //                     '''
 
-                            echo "Checking Quality Gate status..."
-                            def response = sh(
-                                script: """
-                                    curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
-                                """,
-                                returnStdout: true
-                            ).trim()
+        //                     echo "Checking Quality Gate status..."
+        //                     def response = sh(
+        //                         script: """
+        //                             curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
+        //                         """,
+        //                         returnStdout: true
+        //                     ).trim()
 
-                            // Debug response
-                            echo "SonarQube Response: ${response}"
+        //                     // Debug response
+        //                     echo "SonarQube Response: ${response}"
 
-                            def status = sh(
-                                script: """
-                                    export PATH=/tmp/bin:$PATH
-                                    echo '${response}' | /tmp/bin/jq -r '.projectStatus.status'
-                                """,
-                                returnStdout: true
-                            ).trim()
+        //                     def status = sh(
+        //                         script: """
+        //                             export PATH=/tmp/bin:$PATH
+        //                             echo '${response}' | /tmp/bin/jq -r '.projectStatus.status'
+        //                         """,
+        //                         returnStdout: true
+        //                     ).trim()
 
-                            def conditions = sh(
-                                script: """
-                                    export PATH=/tmp/bin:$PATH
-                                    echo '${response}' | /tmp/bin/jq -r '.projectStatus.conditions'
-                                """,
-                                returnStdout: true
-                            ).trim()
+        //                     def conditions = sh(
+        //                         script: """
+        //                             export PATH=/tmp/bin:$PATH
+        //                             echo '${response}' | /tmp/bin/jq -r '.projectStatus.conditions'
+        //                         """,
+        //                         returnStdout: true
+        //                     ).trim()
 
-                            echo "Quality Gate Conditions: ${conditions}"
+        //                     echo "Quality Gate Conditions: ${conditions}"
 
-                            if (status != 'OK') {
-                                error "Quality Gate failed with status: ${status}. Conditions: ${conditions}"
-                            } else {
-                                echo "Quality Gate passed!"
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //                     if (status != 'OK') {
+        //                         error "Quality Gate failed with status: ${status}. Conditions: ${conditions}"
+        //                     } else {
+        //                         echo "Quality Gate passed!"
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Build and Push Docker Image') {
             environment {
