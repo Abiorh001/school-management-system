@@ -100,7 +100,7 @@ spec:
                             exit 1
                         fi
 
-                        git add backend_deployment.yaml
+                        git add backend_deployement.yaml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:deploy
                         """
