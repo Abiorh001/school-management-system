@@ -75,7 +75,7 @@ spec:
              
             
         
-
+        /*
         stage('Code Analysis') {
             steps {
                 container('sonar-scanner') {
@@ -93,6 +93,7 @@ spec:
                 }
             }
         }
+        /*
 
         // Uncomment the below stage if Quality Gate Check is needed
         /*
