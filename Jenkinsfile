@@ -44,8 +44,15 @@ spec:
             steps {
                 container('sonar-scanner') {
                     sh '''
-                        apt-get update
-                        apt-get install -y jq
+                        echo "Checking OS distribution..."
+                        if [ -f /etc/os-release ]; then
+                            cat /etc/os-release
+                        fi
+                        
+                        # Download and install jq directly
+                        curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/local/bin/jq
+                        chmod +x /usr/local/bin/jq
+                        jq --version
                     '''
                 }
             }
