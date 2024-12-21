@@ -70,8 +70,22 @@ spec:
         }
         stage('Quality Gate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                script {
+                    try {
+                        timeout(time: 5, unit: 'MINUTES') {
+                            def qg = waitForQualityGate()
+                            if (qg.status != 'OK') {
+                                error "Quality Gate failed: ${qg.status}"
+                            }
+                            echo "Quality Gate passed successfully"
+                        }
+                    } catch (Exception e) {
+                        if (e.getMessage().contains('timeout')) {
+                            error "Quality Gate timed out after 5 minutes. Please check SonarQube webhook configuration."
+                        } else {
+                            error "Quality Gate failed: ${e.getMessage()}"
+                        }
+                    }
                 }
             }
         }
