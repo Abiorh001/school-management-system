@@ -88,6 +88,7 @@ spec:
                         
                         git fetch origin deploy
                         git checkout deploy
+                        ls -l
 
                         sed -i -E "s|${DOCKER_REGISTRY}/${APP_NAME}:[[:alnum:]._-]*|${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}|g" backend_deployment.yaml
 
