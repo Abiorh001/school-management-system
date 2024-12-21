@@ -92,16 +92,16 @@ spec:
 
                             def status = sh(
                                 script: """
-                                    export PATH=${HOME}/bin:$PATH
-                                    echo '${response}' | ${HOME}/bin/jq -r '.projectStatus.status'
+                                    export PATH=/tmp/bin:$PATH
+                                    echo '${response}' | /tmp/bin/jq -r '.projectStatus.status'
                                 """,
                                 returnStdout: true
                             ).trim()
 
                             def conditions = sh(
                                 script: """
-                                    export PATH=${HOME}/bin:$PATH
-                                    echo '${response}' | ${HOME}/bin/jq -r '.projectStatus.conditions'
+                                    export PATH=/tmp/bin:$PATH
+                                    echo '${response}' | /tmp/bin/jq -r '.projectStatus.conditions'
                                 """,
                                 returnStdout: true
                             ).trim()
