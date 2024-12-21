@@ -56,7 +56,7 @@ spec:
         }
         stage('Code Analysis') {
             steps {
-                withSonarQubeEnv(credentialsId: 'SonarQube') {  // Use your credentials ID
+                withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube-installation') {  // Use your credentials ID
                     sh """
                         echo "Running SonarQube analysis..."
                         ${tool('SonarScanner')}/bin/sonar-scanner \
