@@ -81,7 +81,7 @@ spec:
                             def response = sh(
                                 script: """
                                     set +x
-                                    export PATH=${HOME}/bin:$PATH
+                                    export PATH=/tmp/bin:$PATH
                                     curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
                                 """,
                                 returnStdout: true
@@ -89,8 +89,8 @@ spec:
                             
                             def status = sh(
                                 script: """
-                                    export PATH=${HOME}/bin:$PATH
-                                    echo '${response}' | ${HOME}/bin/jq -r '.projectStatus.status'
+                                    export PATH=/tmp/bin:$PATH
+                                    echo '${response}' | /tmp/bin/jq -r '.projectStatus.status'
                                 """,
                                 returnStdout: true
                             ).trim()
