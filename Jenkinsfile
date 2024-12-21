@@ -116,10 +116,12 @@ spec:
             environment {
                 DOCKER_IMAGE = "abiorh/school_management_system:${BUILD_NUMBER}"
             }
+            container('python') {
             steps {
                 script {
                     sh '''
                     echo "Building Docker Image..."
+                    apt-get update && apt-get install -y docker.io
                     docker build -t ${DOCKER_IMAGE} .
                     '''
 
@@ -130,5 +132,6 @@ spec:
                 }
             }
         }
+    }
     }
 }
