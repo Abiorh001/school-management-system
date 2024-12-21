@@ -74,6 +74,10 @@ spec:
         // }
 
         stage('Update Deployment File') {
+            environment {
+            GIT_REPO_NAME = "school-management-system-"
+            GIT_USER_NAME = "aabiorh001"
+        }
             steps {
                 script {
                     withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
