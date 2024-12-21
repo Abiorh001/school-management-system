@@ -54,6 +54,27 @@ spec:
                 }
             }
         }
+        stage('Code Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''#!/bin/bash
+                        echo "Running SonarQube analysis..."
+                        sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.sources=. \
+                            -Dsonar.python.version=3.12 \
+                            
+                            -Dsonar.qualitygate.wait=true
+                    '''
+                }
+            }
+        }
+                                
+                                
+                          
+             
+            
+        
 
         stage('Code Analysis') {
             steps {
