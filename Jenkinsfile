@@ -88,11 +88,12 @@ spec:
                         
                         git fetch origin deploy
                         git checkout deploy
-                        ls -l
+                       
 
-                        sed -i -E "s|${DOCKER_REGISTRY}/${APP_NAME}:[[:alnum:]._-]*|${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}|g" backend_deployment.yaml
+                        sed -i -E "s|docker.io/school_management_system:[[:alnum:]._-]*|docker.io/school_management_system:${BUILD_NUMBER}|g" backend_deployement.yaml
 
-                        if grep -q "${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}" backend_deployment.yaml; then
+
+                        if grep -q "${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}" backend_deployement.yaml; then
                             echo "Successfully updated deployment file"
                         else
                             echo "Failed to update deployment file"
