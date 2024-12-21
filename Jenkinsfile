@@ -32,23 +32,9 @@ spec:
             steps {
                 container('python') {
                     sh '''
-                    echo "Installing Python dependencies"
-                    # Install necessary dependencies here, e.g.:
+                    echo "Installing Python dependencies..."
+                    # Uncomment below and modify as needed
                     # pip install -r requirements.txt
-                    '''
-                }
-            }
-        }
-
-        stage('Install jq') {
-            steps {
-                container('sonar-scanner') {
-                    sh '''
-                        mkdir -p ${HOME}/bin
-                        curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ${HOME}/bin/jq
-                        chmod +x ${HOME}/bin/jq
-                        export PATH=${HOME}/bin:$PATH
-                        ${HOME}/bin/jq --version
                     '''
                 }
             }
@@ -59,49 +45,54 @@ spec:
                 container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
                         sh '''
-                        echo "Starting Code Analysis"
+                        echo "Starting Code Analysis..."
                         sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                             -Dsonar.sources=. \
                             -Dsonar.python.version=3.12 \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.token=${SONAR_TOKEN}
+                            -Dsonar.login=${SONAR_TOKEN}
                         '''
                     }
                 }
             }
         }
-        
+
         stage('Quality Gate Check') {
             steps {
                 container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
                         script {
+                            sh '''
+                            echo "Setting up jq..."
+                            mkdir -p ${HOME}/bin
+                            curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ${HOME}/bin/jq
+                            chmod +x ${HOME}/bin/jq
+                            export PATH=${HOME}/bin:$PATH
+                            jq --version
+                            '''
+
                             echo "Checking Quality Gate status..."
                             def response = sh(
                                 script: """
-                                    set +x
-                                    export PATH=${HOME}/bin:$PATH
                                     curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
                                 """,
                                 returnStdout: true
                             ).trim()
-                            
-                            // Print out the response for debugging purposes
-                            echo "Response: ${response}"
+
+                            // Debug response
+                            echo "SonarQube Response: ${response}"
 
                             def status = sh(
                                 script: """
-                                    export PATH=/tmp/bin:$PATH
-                                    echo '${response}' | /tmp/bin/jq -r '.projectStatus.status'
+                                    echo '${response}' | jq -r '.projectStatus.status'
                                 """,
                                 returnStdout: true
                             ).trim()
 
                             def conditions = sh(
                                 script: """
-                                    export PATH=/tmp/bin:$PATH
-                                    echo '${response}' | /tmp/bin/jq -r '.projectStatus.conditions'
+                                    echo '${response}' | jq -r '.projectStatus.conditions'
                                 """,
                                 returnStdout: true
                             ).trim()
@@ -114,6 +105,25 @@ spec:
                                 echo "Quality Gate passed!"
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            environment {
+                DOCKER_IMAGE = "abiorh/school_management_system:${BUILD_NUMBER}"
+            }
+            steps {
+                script {
+                    sh '''
+                    echo "Building Docker Image..."
+                    docker build -t ${DOCKER_IMAGE} .
+                    '''
+
+                    def dockerImage = docker.image("${DOCKER_IMAGE}")
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
+                        dockerImage.push()
                     }
                 }
             }
