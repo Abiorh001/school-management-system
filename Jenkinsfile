@@ -93,7 +93,7 @@ spec:
                         sed -i -E "s|abiorh/school_management_system:[[:alnum:]._-]*|abiorh/school_management_system:${BUILD_NUMBER}|g" backend_deployement.yaml
 
 
-                        if grep -q "${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}" backend_deployement.yaml; then
+                        if grep -q "abiorh/${APP_NAME}:${BUILD_NUMBER}" backend_deployement.yaml; then
                             echo "Successfully updated deployment file"
                         else
                             echo "Failed to update deployment file"
