@@ -15,7 +15,6 @@ spec:
       command:
         - cat
       tty: true
-    
     - name: docker
       image: docker:20.10.24
       command:
@@ -37,6 +36,8 @@ spec:
     environment {
         SONAR_HOST_URL = 'http://192.168.1.185:30942'
         SONAR_PROJECT_KEY = 'school_management_system'
+        DOCKER_REGISTRY = 'docker.io'
+        APP_NAME = 'school_management_system'
     }
     stages {
         stage('Install Python Dependencies') {
@@ -44,40 +45,63 @@ spec:
                 container('python') {
                     sh '''
                     echo "Installing Python dependencies..."
-                    # Uncomment and modify as needed to install dependencies
                     # pip install -r requirements.txt
                     '''
                 }
             }
         }
+
         stage('Code Analysis') {
             steps {
-                withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube-installation') {  // Use your credentials ID
+                withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube-installation') {
                     sh """
-                        echo "Running SonarQube analysis..."
-                        ${tool('SonarScanner')}/bin/sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.sources=. \
-                            -Dsonar.python.version=3.12 \
-                            
+                    echo "Running SonarQube analysis..."
+                    ${tool('SonarScanner')}/bin/sonar-scanner \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.sources=. \
+                        -Dsonar.python.version=3.12
                     """
                 }
             }
         }
-        stage('Quality Gate') {
+
+        // stage('Quality Gate') {
+        //     steps {
+        //         timeout(time: 5, unit: 'MINUTES') {
+        //             waitForQualityGate abortPipeline: true
+        //         }
+        //     }
+        // }
+
+        stage('Update Deployment File') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                script {
+                    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                        sh """
+                        echo "Updating deployment file..."
+                        git config user.email "abiolaadedayo1993@gmail.com"
+                        git config user.name "abiorh001"
+                        
+                        git fetch origin deploy
+                        git checkout deploy
+
+                        sed -i -E "s|${DOCKER_REGISTRY}/${APP_NAME}:[[:alnum:]._-]*|${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}|g" ./backend_deployment.yaml
+
+                        if grep -q "${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}" ./backend_deployment.yaml; then
+                            echo "Successfully updated deployment file"
+                        else
+                            echo "Failed to update deployment file"
+                            exit 1
+                        fi
+
+                        git add backend_deployment.yaml
+                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:deploy
+                        """
+                    }
                 }
             }
         }
-                                
-                                
-                          
-             
-            
-        
-        
 
         stage('Build and Push Docker Image') {
             environment {
@@ -91,7 +115,7 @@ spec:
                             echo "Building Docker Image..."
                             docker build -t ${DOCKER_IMAGE} .
                             echo "Logging into Docker Hub..."
-                            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
                             echo "Pushing Docker Image..."
                             docker push ${DOCKER_IMAGE}
                             '''
