@@ -44,15 +44,11 @@ spec:
             steps {
                 container('sonar-scanner') {
                     sh '''
-                        echo "Checking OS distribution..."
-                        if [ -f /etc/os-release ]; then
-                            cat /etc/os-release
-                        fi
-                        
-                        # Download and install jq directly
-                        curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/local/bin/jq
-                        chmod +x /usr/local/bin/jq
-                        jq --version
+                        mkdir -p ${HOME}/bin
+                        curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ${HOME}/bin/jq
+                        chmod +x ${HOME}/bin/jq
+                        export PATH=${HOME}/bin:$PATH
+                        ${HOME}/bin/jq --version
                     '''
                 }
             }
@@ -85,6 +81,7 @@ spec:
                             def response = sh(
                                 script: """
                                     set +x
+                                    export PATH=${HOME}/bin:$PATH
                                     curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
                                 """,
                                 returnStdout: true
@@ -92,7 +89,8 @@ spec:
                             
                             def status = sh(
                                 script: """
-                                    echo '${response}' | jq -r '.projectStatus.status'
+                                    export PATH=${HOME}/bin:$PATH
+                                    echo '${response}' | ${HOME}/bin/jq -r '.projectStatus.status'
                                 """,
                                 returnStdout: true
                             ).trim()
