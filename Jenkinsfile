@@ -56,19 +56,19 @@ spec:
         }
         stage('Code Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''#!/bin/bash
+                withSonarQubeEnv(credentialsId: 'SonarQube') {  // Use your credentials ID
+                    sh """
                         echo "Running SonarQube analysis..."
-                        sonar-scanner \
+                        ${tool('SonarScanner')}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                             -Dsonar.sources=. \
                             -Dsonar.python.version=3.12 \
                             
-                            -Dsonar.qualitygate.wait=true
-                    '''
+                    """
                 }
             }
         }
+
                                 
                                 
                           
