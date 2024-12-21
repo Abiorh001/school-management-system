@@ -113,9 +113,9 @@ spec:
                         sh '''
                         echo "Installing Docker and building the image..."
                         apt-get update && apt-get install -y docker.io
-                        sudo service docker start
+                        service docker start
                         
-                        sudo docker build -t ${DOCKER_IMAGE} .
+                        docker build -t ${DOCKER_IMAGE} .
                         '''
 
                         def dockerImage = docker.image("${DOCKER_IMAGE}")
