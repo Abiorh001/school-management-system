@@ -76,6 +76,7 @@ spec:
                             def qg = waitForQualityGate()
                             if (qg.status != 'OK') {
                                 error "Quality Gate failed: ${qg.status}"
+                                echo "Quality Gate Conditions: ${qg.conditions}"
                             }
                             echo "Quality Gate passed successfully"
                         }
