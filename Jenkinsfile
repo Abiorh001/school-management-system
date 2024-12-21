@@ -90,7 +90,7 @@ spec:
                         git checkout deploy
                        
 
-                        sed -i -E "s|docker.io/school_management_system:[[:alnum:]._-]*|docker.io/school_management_system:${BUILD_NUMBER}|g" backend_deployement.yaml
+                        sed -i -E "s|abiorh/school_management_system:[[:alnum:]._-]*|abiorh/school_management_system:${BUILD_NUMBER}|g" backend_deployement.yaml
 
 
                         if grep -q "${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}" backend_deployement.yaml; then
