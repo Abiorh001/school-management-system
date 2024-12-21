@@ -15,11 +15,7 @@ spec:
       command:
         - cat
       tty: true
-    - name: sonar-scanner
-      image: sonarsource/sonar-scanner-cli:11.1.1.1661_6.2.1
-      command:
-        - cat
-      tty: true
+    
     - name: docker
       image: docker:20.10.24
       command:
@@ -70,24 +66,8 @@ spec:
         }
         stage('Quality Gate') {
             steps {
-                script {
-                    try {
-                        timeout(time: 5, unit: 'MINUTES') {
-                            def qg = waitForQualityGate()
-                            if (qg.status != 'OK') {
-                                echo "Quality Gate Conditions: ${qg}"
-                                error "Quality Gate failed: ${qg.status}"
-                                
-                            }
-                            echo "Quality Gate passed successfully"
-                        }
-                    } catch (Exception e) {
-                        if (e.getMessage().contains('timeout')) {
-                            error "Quality Gate timed out after 5 minutes. Please check SonarQube webhook configuration."
-                        } else {
-                            error "Quality Gate failed: ${e.getMessage()}"
-                        }
-                    }
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -97,70 +77,7 @@ spec:
              
             
         
-        /*
-        stage('Code Analysis') {
-            steps {
-                container('sonar-scanner') {
-                    withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                        echo "Starting Code Analysis..."
-                        sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.sources=. \
-                            -Dsonar.python.version=3.12 \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_TOKEN}
-                        '''
-                    }
-                }
-            }
-        }
-        /*
-
-        // Uncomment the below stage if Quality Gate Check is needed
-        /*
-        stage('Quality Gate Check') {
-            steps {
-                container('sonar-scanner') {
-                    withCredentials([string(credentialsId: 'SonarQube', variable: 'SONAR_TOKEN')]) {
-                        script {
-                            sh '''
-                            echo "Setting up jq..."
-                            mkdir -p ${HOME}/bin
-                            curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ${HOME}/bin/jq
-                            chmod +x ${HOME}/bin/jq
-                            export PATH=${HOME}/bin:$PATH
-                            jq --version
-                            '''
-
-                            echo "Checking Quality Gate status..."
-                            def response = sh(
-                                script: """
-                                    curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
-                                """,
-                                returnStdout: true
-                            ).trim()
-
-                            echo "SonarQube Response: ${response}"
-
-                            def status = sh(
-                                script: """
-                                    echo '${response}' | ${HOME}/bin/jq -r '.projectStatus.status'
-                                """,
-                                returnStdout: true
-                            ).trim()
-
-                            if (status != 'OK') {
-                                error "Quality Gate failed with status: ${status}"
-                            } else {
-                                echo "Quality Gate passed!"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        */
+        
 
         stage('Build and Push Docker Image') {
             environment {
