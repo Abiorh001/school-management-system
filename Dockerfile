@@ -5,7 +5,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy only the frontend directory into the container
-COPY ./frontend /app
+COPY . /app
 
 # Install project dependencies
 RUN npm install
