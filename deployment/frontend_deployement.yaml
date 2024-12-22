@@ -18,7 +18,7 @@ spec:
         - name: abiorh-registry
       containers:
       - name: frontend
-        image: abiorh/school_management_system_frontend:40
+        image: abiorh/school_management_system_frontend:7
         ports:
         - containerPort: 3000
         command: ["npm", "run", "dev"]
