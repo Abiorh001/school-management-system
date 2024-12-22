@@ -90,17 +90,17 @@ spec:
                         git checkout deploy
                        
 
-                        sed -i -E "s|abiorh/school_management_system:[[:alnum:]._-]*|abiorh/school_management_system:${BUILD_NUMBER}|g" backend_deployement.yaml
+                        sed -i -E "s|abiorh/school_management_system:[[:alnum:]._-]*|abiorh/school_management_system:${BUILD_NUMBER}|g" deployment/backend_deployement.yaml
 
 
-                        if grep -q "abiorh/${APP_NAME}:${BUILD_NUMBER}" backend_deployement.yaml; then
+                        if grep -q "abiorh/${APP_NAME}:${BUILD_NUMBER}" deployment/backend_deployement.yaml; then
                             echo "Successfully updated deployment file"
                         else
                             echo "Failed to update deployment file"
                             exit 1
                         fi
 
-                        git add backend_deployement.yaml
+                        git add deployment/backend_deployement.yaml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:deploy
                         """
