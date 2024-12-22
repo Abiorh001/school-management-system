@@ -19,7 +19,7 @@ spec:
       initContainers:
       - name: makemigrations
         image: abiorh/school_management_system:54
-        command: [python", "manage.py", "migrates"]
+        command: [python3", "manage.py", "migrates"]
         env:
         - name: DB_NAME
           valueFrom:
