@@ -21,7 +21,7 @@ spec:
         image: abiorh/school_management_system:54
         ports:
         - containerPort: 8000
-        command: ["gunicorn", "-b", "0.0.0.0:8000", "smartEdConnect.wsgi:application"]
+        command: ["sh", "-c", "python manage.py migrate && gunicorn -b 0.0.0.0:8000 smartEdConnect.wsgi:application"]
         env:
         - name: DB_NAME
           valueFrom:
