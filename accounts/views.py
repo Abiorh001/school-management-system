@@ -13,6 +13,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from school_module.models import School
 from department_module.models import Department
+from django.db import connection
 
 
 
@@ -212,7 +213,7 @@ class CreateUsers(APIView):
 
     POST: Create a new user account and send a confirmation email(requires admin authentication)..
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     @swagger_auto_schema(
         operation_summary="School Admin Create a new user account",
