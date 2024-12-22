@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;700&family=Open+Sans:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: rgb(240, 247, 255);
+  color: #000;
+  scroll-behavior: smooth;
+  position: relative;
+  font-family: 'Open Sans', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Barlow', sans-serif;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.mask {
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 30%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 30%);
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.link {
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.input {
+  @apply border w-full py-1 rounded-lg px-3 text-black mt-2
+}
+
+.input.login {
+  @apply pl-8
+}
+
+.input:focus {
+  @apply outline-none border-btn
+}
+
+.submit {
+  @apply border self-center bg-btn text-white w-2/4 rounded-xl py-2
+}
+
+.dactive {
+  @apply bg-active
+}
+
+.dlink {
+  @apply px-3 w-full py-2 rounded-sm flex items-center gap-2 font-bold text-[0.9rem]
+}
+
+.error {
+  background-image: url("../src/assets/404.png"),
+    url("../src/assets/circle.svg"),
+    url("../src/assets/cross.svg"), url("../src/assets/cross.svg"), url("../src/assets/circle.svg");
+  background-position: left, 10% 10%, 90% 90%, 90% 20%, 10% 90%;
+  background-repeat: no-repeat;
+  background-size: _, 1rem, 10px, 10px, 1rem;
+}
+
+tbody tr {
+  cursor: pointer;
+}
+
+a,
+.btn,
+.link {
+  @apply transform transition-all duration-75 delay-75
+}
+
+a:hover,
+.btn:hover,
+.link:hover {
+  @apply scale-[0.9] opacity-90
+}
+
+@media screen and (min-width: 765px) {
+  .link {
+    @apply px-12
+  }
+
+  .error {
+    background-position: left, 80% 10%, 70% 90%, 30% 30%, 30% 90%;
+    background-size: _, 2rem, 5rem, 10px, 3rem;
+  }
+
+  .input.login {
+    @apply pl-8
+  }
+
+}
