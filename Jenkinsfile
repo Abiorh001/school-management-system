@@ -60,9 +60,7 @@ spec:
                     ${tool('SonarScanner')}/bin/sonar-scanner \
                         -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                         -Dsonar.sources=. \
-                        -Dsonar.nodejs.executable=node \
-                        
-
+                        -Dsonar.nodejs.executable=node
                     """
                 }
             }
@@ -74,7 +72,7 @@ spec:
                     waitForQualityGate abortPipeline: true
                 }
             }
-        
+        }
 
         stage('Build and Push Docker Image') {
             environment {
@@ -100,9 +98,9 @@ spec:
 
         stage('Update Deployment File') {
             environment {
-            GIT_REPO_NAME = "school-management-system-"
-            GIT_USER_NAME = "abiorh001"
-        }
+                GIT_REPO_NAME = "school-management-system-"
+                GIT_USER_NAME = "abiorh001"
+            }
             steps {
                 script {
                     withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
@@ -114,9 +112,7 @@ spec:
                         git fetch origin deploy
                         git checkout deploy
                        
-
                         sed -i -E "s|abiorh/school_management_system_frontend:[[:alnum:]._-]*|abiorh/school_management_system_frontend:${BUILD_NUMBER}|g" deployment/frontend_deployement.yaml
-
 
                         if grep -q "abiorh/${APP_NAME}:${BUILD_NUMBER}" deployment/frontend_deployement.yaml; then
                             echo "Successfully updated deployment file"
@@ -133,5 +129,5 @@ spec:
                 }
             }
         }
-    }
-}
+    } // End of stages
+} // End of pipeline
