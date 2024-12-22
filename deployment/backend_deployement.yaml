@@ -18,7 +18,7 @@ spec:
         - name: abiorh-registry
       initContainers:
       - name: makemigrations
-        image: abiorh/school_management_system:52
+        image: abiorh/school_management_system:54
         command: ["python", "manage.py", "makemigrations"]
         env:
         - name: DB_NAME
@@ -48,7 +48,7 @@ spec:
               key: DB_PORT
       containers:
       - name: backend
-        image: abiorh/school_management_system:52
+        image: abiorh/school_management_system:54
         ports:
         - containerPort: 8000
         command: ["gunicorn", "-b", "0.0.0.0:8000", "smartEdConnect.wsgi:application"]
