@@ -10,11 +10,12 @@ metadata:
     app: jenkins
 spec:
   containers:
-    - name: python
+    - name: backend
       image: python:3.12
       command:
         - cat
       tty: true
+    
     - name: docker
       image: docker:20.10.24
       command:
@@ -42,7 +43,7 @@ spec:
     stages {
         stage('Install Python Dependencies') {
             steps {
-                container('python') {
+                container('backend') {
                     sh '''
                     echo "Installing Python dependencies..."
                     # pip install -r requirements.txt
@@ -71,7 +72,29 @@ spec:
         //             waitForQualityGate abortPipeline: true
         //         }
         //     }
-        // }
+        // 
+
+        stage('Build and Push Docker Image') {
+            environment {
+                DOCKER_IMAGE = "abiorh/school_management_system:${BUILD_NUMBER}"
+            }
+            steps {
+                container('docker') {
+                    withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        script {
+                            sh '''
+                            echo "Building Docker Image..."
+                            docker build -t ${DOCKER_IMAGE} .
+                            echo "Logging into Docker Hub..."
+                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                            echo "Pushing Docker Image..."
+                            docker push ${DOCKER_IMAGE}
+                            '''
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Update Deployment File') {
             environment {
@@ -104,28 +127,6 @@ spec:
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:deploy
                         """
-                    }
-                }
-            }
-        }
-
-        stage('Build and Push Docker Image') {
-            environment {
-                DOCKER_IMAGE = "abiorh/school_management_system:${BUILD_NUMBER}"
-            }
-            steps {
-                container('docker') {
-                    withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        script {
-                            sh '''
-                            echo "Building Docker Image..."
-                            docker build -t ${DOCKER_IMAGE} .
-                            echo "Logging into Docker Hub..."
-                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                            echo "Pushing Docker Image..."
-                            docker push ${DOCKER_IMAGE}
-                            '''
-                        }
                     }
                 }
             }

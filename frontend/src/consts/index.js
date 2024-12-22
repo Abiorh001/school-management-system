@@ -1,4 +1,4 @@
-export const baseUrl = 'https://smartedconnecttest-io.onrender.com/api/v1/';
+export const baseUrl = 'http://backend:8000/api/v1/';
 
 export const roleUrl = {
   superuser: 'su',
