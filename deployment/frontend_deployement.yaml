@@ -21,7 +21,7 @@ spec:
         image: abiorh/school_management_system_frontend:40
         ports:
         - containerPort: 3000
-        command: ["npm", "start"]
+        command: ["npm", "run", "dev"]
 
 ---
 apiVersion: v1
