@@ -10,8 +10,8 @@ metadata:
     app: jenkins
 spec:
   containers:
-    - name: backend
-      image: python:3.12
+    - name: frontend
+      image: node:18-alpine
       command:
         - cat
       tty: true
@@ -38,15 +38,15 @@ spec:
         SONAR_HOST_URL = 'http://192.168.1.185:30942'
         SONAR_PROJECT_KEY = 'school_management_system'
         DOCKER_REGISTRY = 'docker.io'
-        APP_NAME = 'school_management_system'
+        APP_NAME = 'school_management_system_frontend'
     }
     stages {
-        stage('Install Python Dependencies') {
+        stage('Install Dependencies') {
             steps {
-                container('backend') {
+                container('frontend') {
                     sh '''
-                    echo "Installing Python dependencies..."
-                    # pip install -r requirements.txt
+                    echo "Installing dependencies..."
+                    npm install
                     '''
                 }
             }
@@ -60,23 +60,25 @@ spec:
                     ${tool('SonarScanner')}/bin/sonar-scanner \
                         -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                         -Dsonar.sources=. \
-                        -Dsonar.python.version=3.12
+                        -Dsonar.nodejs.executable=node \
+                        
+
                     """
                 }
             }
         }
 
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 5, unit: 'MINUTES') {
-        //             waitForQualityGate abortPipeline: true
-        //         }
-        //     }
-        // 
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        
 
         stage('Build and Push Docker Image') {
             environment {
-                DOCKER_IMAGE = "abiorh/school_management_system:${BUILD_NUMBER}"
+                DOCKER_IMAGE = "abiorh/school_management_system_frontend:${BUILD_NUMBER}"
             }
             steps {
                 container('docker') {
@@ -113,17 +115,17 @@ spec:
                         git checkout deploy
                        
 
-                        sed -i -E "s|abiorh/school_management_system:[[:alnum:]._-]*|abiorh/school_management_system:${BUILD_NUMBER}|g" deployment/backend_deployement.yaml
+                        sed -i -E "s|abiorh/school_management_system_frontend:[[:alnum:]._-]*|abiorh/school_management_system_frontend:${BUILD_NUMBER}|g" deployment/frontend_deployement.yaml
 
 
-                        if grep -q "abiorh/${APP_NAME}:${BUILD_NUMBER}" deployment/backend_deployement.yaml; then
+                        if grep -q "abiorh/${APP_NAME}:${BUILD_NUMBER}" deployment/frontend_deployement.yaml; then
                             echo "Successfully updated deployment file"
                         else
                             echo "Failed to update deployment file"
                             exit 1
                         fi
 
-                        git add deployment/backend_deployement.yaml
+                        git add deployment/frontend_deployement.yaml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:deploy
                         """
