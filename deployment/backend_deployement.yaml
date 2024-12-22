@@ -16,6 +16,36 @@ spec:
     spec:
       imagePullSecrets:
         - name: abiorh-registry
+      initContainers:
+      - name: makemigrations
+        image: abiorh/school_management_system:52
+        command: ["python", "manage.py", "makemigrations"]
+        env:
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: DB_PASSWORD
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: DB_PORT
       containers:
       - name: backend
         image: abiorh/school_management_system:52
@@ -48,6 +78,7 @@ spec:
             secretKeyRef:
               name: db-credentials
               key: DB_PORT
+
 
 
 ---
