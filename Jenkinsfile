@@ -36,7 +36,7 @@ spec:
     }
     environment {
         SONAR_HOST_URL = 'http://192.168.1.185:30942'
-        SONAR_PROJECT_KEY = 'school_management_system'
+        SONAR_PROJECT_KEY = 'school_management_system_frontend'
         DOCKER_REGISTRY = 'docker.io'
         APP_NAME = 'school_management_system_frontend'
     }
