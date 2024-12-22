@@ -60,7 +60,7 @@ spec:
                     ${tool('SonarScanner')}/bin/sonar-scanner \
                         -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                         -Dsonar.sources=. \
-                        -Dsonar.nodejs.executable=node
+                        
                     """
                 }
             }
