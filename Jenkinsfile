@@ -11,7 +11,7 @@ metadata:
 spec:
   containers:
     - name: frontend
-      image: node:18-alpine
+      image: node:18
       command:
         - cat
       tty: true
